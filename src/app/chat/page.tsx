@@ -7,68 +7,121 @@ import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageLoadingSpinner } from "@/components/message-loading-spinner";
 interface Message {
-  id: number;
-  text: string;
-  sender: "user" | "bot";
+  content: string;
+  role: "user" | "bot";
 }
 
 export default function Chat() {
   const [content, setContent] = useState("");
   const [metadata, setMetadata] = useState({});
   const [messages, setMessages] = useState<Message[]>([
-    { id: 1, text: "Hello! How can I help you today?", sender: "bot" },
+    { content: "Hello! How can I help you today?", role: "bot" },
   ]);
   const [inputMessage, setInputMessage] = useState<string>("");
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true)
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const searchParams = useSearchParams();
 
   useEffect(() => {
     const getPdfResults = async () => {
-      
       const file = searchParams.get("file"); // Get 'file' from query params
-      
+
       if (file) {
         try {
           const response = await fetch(`/api/parse?file=${file}`);
           if (!response.ok) throw new Error("Failed to fetch PDF results");
-          
+
           const data = await response.json();
           setContent(data.content);
           setMetadata(data.metadata);
         } catch (error) {
           console.error("Error fetching PDF results:", error);
         } finally {
-          setIsLoading(false)
+          setIsLoading(false);
         }
       } else {
         console.error("No file parameter found in the URL");
       }
     };
-    
+
     getPdfResults();
   }, []);
 
-  const handleSendMessage = (e: React.FormEvent) => {
+  const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (inputMessage.trim() !== "") {
-      const newMessage: Message = {
-        id: messages.length + 1,
-        text: inputMessage,
-        sender: "user",
-      };
-      setMessages([...messages, newMessage]);
+    if (inputMessage.trim() === "") return;
+    const newMessages: Message[] = [
+      ...messages,
+      {
+        role: "user",
+        content: inputMessage,
+      },
+      {
+        role: "bot",
+        content: "",
+      },
+    ];
+    const lastMessageIndex = newMessages.length - 1;
+    // update state to update frontend display
+    setMessages(newMessages);
+    // We want to send the whole messages array to the backend to handle our RAG process
+    try {
+      const response = await fetch("/api/chat", {
+        method: "POST",
+        body: JSON.stringify([
+          ...messages,
+          {
+            role: "user",
+            content: inputMessage,
+          },
+        ]),
+      });
+      // clear input
       setInputMessage("");
 
-      // Simulate bot response
-      setTimeout(() => {
-        const botResponse: Message = {
-          id: messages.length + 2,
-          text: "Thanks for your message. I'm a demo AI assistant.",
-          sender: "bot",
+      if (!response.ok) {
+        throw new Error("Network response was not ok");
+      }
+      const botResponse = await response.json()
+      console.log(botResponse)
+
+      setMessages((prevMessages) => {
+        const updatedMessages = [...prevMessages];
+        updatedMessages[lastMessageIndex] = {
+          ...updatedMessages[lastMessageIndex],
+          content: updatedMessages[lastMessageIndex].content + `${botResponse}`,
         };
-        setMessages((prevMessages) => [...prevMessages, botResponse]);
-      }, 1000);
+        return updatedMessages;
+      });
+      // const reader = response.body?.getReader();
+      // const decoder = new TextDecoder();
+
+      // while (true) {
+      //   const { done, value } = await (
+      //     reader as ReadableStreamDefaultReader<Uint8Array>
+      //   ).read();
+      //   if (done) break;
+
+      //   const text = decoder.decode(value, { stream: true });
+
+        // setMessages((prevMessages) => {
+        //   const updatedMessages = [...prevMessages];
+        //   updatedMessages[lastMessageIndex] = {
+        //     ...updatedMessages[lastMessageIndex],
+        //     content: updatedMessages[lastMessageIndex].content + text,
+        //   };
+        //   return updatedMessages;
+        // });
+      // }
+    } catch (error) {
+      setMessages((messages) => [
+        ...messages,
+        {
+          role: "bot",
+          content:
+            "I'm sorry, but I encountered an error. Please try again later.",
+        },
+      ]);
     }
   };
 
@@ -125,27 +178,26 @@ export default function Chat() {
 
         {/* Messages */}
         <ScrollArea className="flex-grow p-4 space-y-4 lg:w-[60%] lg:mx-auto">
-          {isLoading && (
-            <MessageLoadingSpinner />
-          )}
-          {!isLoading && messages.map((message) => (
-            <div
-              key={message.id}
-              className={`flex ${
-                message.sender === "user" ? "justify-end" : "justify-start"
-              }`}
-            >
+          {isLoading && <MessageLoadingSpinner />}
+          {!isLoading &&
+            messages.map((message, idx) => (
               <div
-                className={`max-w-[80%] p-3 rounded-lg ${
-                  message.sender === "user"
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-secondary text-secondary-foreground"
+                key={idx}
+                className={`flex ${
+                  message.role === "user" ? "justify-end" : "justify-start"
                 }`}
               >
-                {message.text}
+                <div
+                  className={`max-w-[80%] p-3 rounded-lg ${
+                    message.role === "user"
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-secondary text-secondary-foreground"
+                  }`}
+                >
+                  {message.content}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
         </ScrollArea>
 
         {/* Input Area */}
@@ -157,7 +209,7 @@ export default function Chat() {
                 placeholder="Type your message..."
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
-                className="flex-grow bg-background text-foreground placeholder-muted-foreground"
+                className="flex-grow bg-background text-primary placeholder-muted-foreground"
               />
               <Button
                 type="submit"
