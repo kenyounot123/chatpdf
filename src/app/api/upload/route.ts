@@ -1,23 +1,8 @@
-import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import fs from "fs";
 import path from "path";
+import { redirect } from "next/navigation";
 import { NextResponse, NextRequest } from "next/server";
-export async function GET() {
-  // the file path needs to be dynamically handled
-  try {
-    const loader = new PDFLoader("public/uploads/1725913914104-Ken Resume.pdf");
-    const docs = await loader.load();
-    return NextResponse.json({
-      content: docs[0].pageContent,
-      metadata: docs[0].metadata,
-    });
-  } catch (error) {
-    return NextResponse.json(
-      { error: "Failed to load and parse PDF" },
-      { status: 500 }
-    );
-  }
-}
+
 export async function POST(req: NextRequest) {
   const formData = await req.formData();
   const file = formData.get("file");
@@ -32,12 +17,15 @@ export async function POST(req: NextRequest) {
     }
 
     // Save the file
-    const filePath = path.join(uploadDir, `${Date.now()}-${file.name}`);
+    const fileName = `${Date.now()}-${file.name}`;
+    const filePath = path.join(uploadDir, fileName);
     const buffer = Buffer.from(await file.arrayBuffer());
 
     fs.writeFileSync(filePath, buffer);
-
-    return NextResponse.json({ filePath: filePath.replace("public/", "") });
+    const publicFileUrl = `/uploads/${fileName}`;
+    return NextResponse.redirect(
+      new URL(`/chat?file=${publicFileUrl}`, req.url)
+    );
   } catch (error) {
     return NextResponse.json(
       { error: "Failed to upload file" },

@@ -5,7 +5,7 @@ import { useDropzone } from "react-dropzone";
 import { Upload, File, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
-export default function Component() {
+export default function Homepage() {
   const [file, setFile] = useState<File | null>(null);
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
@@ -27,7 +27,6 @@ export default function Component() {
 
   const handleUpload = async () => {
     // send the file to the server
-    
     const formData = new FormData();
     formData.append("file", file as Blob);
     try {
@@ -35,16 +34,13 @@ export default function Component() {
         method: "POST",
         body: formData,
       });
-      
-      if (!response.ok) {
-        throw new Error("Failed to upload file");
+
+      if (response.redirected) {
+        // Handle the redirection in the client
+        window.location.href = response.url; // Follow the redirect manually
+      } else {
+        console.log("Upload failed or no redirect");
       }
-  
-      const result = await response.json();
-      console.log("Upload successful:", result);
-  
-      // Optionally, handle success (e.g., show a message or update the UI)
-      alert("File uploaded successfully");
     } catch (error) {
       console.log("Error while sending file to server", error);
     }
