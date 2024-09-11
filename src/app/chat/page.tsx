@@ -1,25 +1,29 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Send, Menu, Plus, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageLoadingSpinner } from "@/components/message-loading-spinner";
+import Markdown from 'react-markdown'
+import { Textarea } from "@/components/ui/textarea";
+
 interface Message {
   content: string;
   role: "user" | "bot";
 }
 
 export default function Chat() {
-  const [content, setContent] = useState("");
-  const [metadata, setMetadata] = useState({});
+  // const [content, setContent] = useState("");
+  // const [metadata, setMetadata] = useState({});
   const [messages, setMessages] = useState<Message[]>([
     { content: "Hello! How can I help you today?", role: "bot" },
   ]);
   const [inputMessage, setInputMessage] = useState<string>("");
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(true);
+  const messagesEndRef = useRef(null)
   const searchParams = useSearchParams();
 
   useEffect(() => {
@@ -32,8 +36,8 @@ export default function Chat() {
           if (!response.ok) throw new Error("Failed to fetch PDF results");
 
           const data = await response.json();
-          setContent(data.content);
-          setMetadata(data.metadata);
+          // setContent(data.content);
+          // setMetadata(data.metadata);
         } catch (error) {
           console.error("Error fetching PDF results:", error);
         } finally {
@@ -43,13 +47,27 @@ export default function Chat() {
         console.error("No file parameter found in the URL");
       }
     };
-
+  
     getPdfResults();
   }, []);
 
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages])
+
+  const scrollToBottom = () => {
+    setTimeout(() => {
+      (messagesEndRef.current as HTMLElement | null)?.scrollIntoView({
+        behavior: "smooth",
+        block: 'nearest',
+      });
+    }, 100);
+  };
+  
   const handleSendMessage = async (e: React.FormEvent) => {
     e.preventDefault();
     if (inputMessage.trim() === "") return;
+    setInputMessage("");
     const newMessages: Message[] = [
       ...messages,
       {
@@ -77,7 +95,6 @@ export default function Chat() {
         ]),
       });
       // clear input
-      setInputMessage("");
 
       if (!response.ok) {
         throw new Error("Network response was not ok");
@@ -124,6 +141,13 @@ export default function Chat() {
       ]);
     }
   };
+
+  const handleEnterClick = (e:React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault()
+      handleSendMessage(e)
+    }
+  }
 
   return (
     <div className="flex h-screen bg-background">
@@ -185,7 +209,7 @@ export default function Chat() {
                 key={idx}
                 className={`flex ${
                   message.role === "user" ? "justify-end" : "justify-start"
-                }`}
+                } mb-5`}
               >
                 <div
                   className={`max-w-[80%] p-3 rounded-lg ${
@@ -194,22 +218,25 @@ export default function Chat() {
                       : "bg-secondary text-secondary-foreground"
                   }`}
                 >
-                  {message.content}
+                  <Markdown>
+                    {message.content}
+                  </Markdown>
                 </div>
               </div>
             ))}
+            <div ref={messagesEndRef}/>
         </ScrollArea>
 
         {/* Input Area */}
         <div className="border-t border-border bg-background p-4">
           <form onSubmit={handleSendMessage} className="max-w-4xl mx-auto">
-            <div className="flex space-x-2">
-              <Input
-                type="text"
+            <div className="flex space-x-2 items-center">
+              <Textarea
                 placeholder="Type your message..."
                 value={inputMessage}
                 onChange={(e) => setInputMessage(e.target.value)}
-                className="flex-grow bg-background text-primary placeholder-muted-foreground"
+                onKeyDown={(e) => handleEnterClick(e)}
+                className="flex-grow bg-background text-primary placeholder-muted-foreground resize-none"
               />
               <Button
                 type="submit"

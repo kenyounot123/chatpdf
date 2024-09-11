@@ -17,6 +17,5 @@ export async function POST(req:NextRequest) {
   // create embedding with user message and conduct RAG then stream the response
   // for now lets just output the response to the frontend and do not stream it 
   const response = await ragProcess(llm, vectorStore, userQuery)
-  // Return the stream as a response
   return NextResponse.json(response)
 }
