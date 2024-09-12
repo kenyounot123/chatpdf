@@ -29,20 +29,30 @@ export default function Homepage() {
     // send the file to the server
     const formData = new FormData();
     formData.append("file", file as Blob);
-    try {
-      const response = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (response.redirected) {
-        // Handle the redirection in the client
-        window.location.href = response.url; // Follow the redirect manually
-      } else {
-        console.log("Upload failed or no redirect");
+    if (file) {
+      try {
+        const response = await fetch("/api/upload", {
+          method: "POST",
+          body: formData,
+        });
+        const url = await response.json()
+  
+        const uploadFile = await fetch(url, {
+          method: "PUT",
+          body: file,
+          headers: {
+            "Content-Type": file.type,
+          }
+  
+        })
+        if (!uploadFile.ok) {
+          throw new Error("Failed to upload file to S3");
+        }
+        console.log("File uploaded successfully!");
+  
+      } catch (error) {
+        console.log("Error while sending file to server", error);
       }
-    } catch (error) {
-      console.log("Error while sending file to server", error);
     }
   };
 

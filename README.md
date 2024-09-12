@@ -1,36 +1,29 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# PDF Chatbot RAG App
+
+This project is a PDF-based chatbot application using Retrieval-Augmented Generation (RAG). Users can upload a PDF document, and the chatbot will answer queries related to the document using the document's content.
+
+## Features
+
+- **PDF Upload**: Users can upload PDF documents to the app.
+- **RAG-based Querying**: Queries are processed using a Retrieval-Augmented Generation (RAG) pipeline, fetching relevant content from the uploaded document and generating responses.
+- **Document-Specific Queries**: All user queries are answered based on the content of the uploaded document. If the answer cannot be found in the document, the chatbot will notify the user.
+- **Real-time Response**: The chatbot provides concise and accurate answers in real-time using the provided context.
+
+## Technologies Used
+
+- **Next.js**: Frontend framework for building the UI and routing.
+- **React**: Component-based UI for building interactive user interfaces.
+- **Tailwind CSS**: Utility-first CSS framework for styling and responsive design.
+- **LangChain**: Framework for building RAG pipelines using language models.
+- **OpenAI API**: Provides GPT-based language models for generating responses.
+- **Pinecone**: Vector database for efficient document embedding retrieval.
+- **shadcn**: UI component library for front end
 
 ## Getting Started
 
-First, run the development server:
+### Prerequisites
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+To run this app, you'll need:
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
-
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- OpenAI API Key
+- Pinecone API Key

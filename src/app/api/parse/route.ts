@@ -3,8 +3,7 @@ import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { NextResponse, NextRequest } from "next/server";
 import path from "path"
 export async function GET(req: NextRequest) {
-  // the file path needs to be dynamically handled
-  // We get the file name from the query params and then parse the pdf
+  // Update this to get the file from s3 bucket then parse
   const { searchParams } = new URL(req.url);
   const file = searchParams.get("file") as string;
   const filePath = path.join(process.cwd(), "public", file)

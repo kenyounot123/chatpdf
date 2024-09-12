@@ -15,8 +15,6 @@ interface Message {
 }
 
 export default function Chat() {
-  // const [content, setContent] = useState("");
-  // const [metadata, setMetadata] = useState({});
   const [messages, setMessages] = useState<Message[]>([
     { content: "Hello! How can I help you today?", role: "bot" },
   ]);
@@ -27,6 +25,7 @@ export default function Chat() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
+    // Update to reading from aws s3 bucket
     const getPdfResults = async () => {
       const file = searchParams.get("file"); // Get 'file' from query params
 
@@ -36,8 +35,6 @@ export default function Chat() {
           if (!response.ok) throw new Error("Failed to fetch PDF results");
 
           const data = await response.json();
-          // setContent(data.content);
-          // setMetadata(data.metadata);
         } catch (error) {
           console.error("Error fetching PDF results:", error);
         } finally {
