@@ -2,11 +2,14 @@
 
 import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
-import { Upload, File, X } from "lucide-react";
+import { Upload, File, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useRouter } from 'next/navigation'
 
 export default function Homepage() {
   const [file, setFile] = useState<File | null>(null);
+  const [loading, setLoading] = useState<boolean>(false)
+  const router = useRouter()
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles[0].type === "application/pdf") {
@@ -26,6 +29,7 @@ export default function Homepage() {
   const removeFile = () => setFile(null);
 
   const handleUpload = async () => {
+    setLoading(true)
     // send the file to the server
     const formData = new FormData();
     formData.append("file", file as Blob);
@@ -35,25 +39,28 @@ export default function Homepage() {
           method: "POST",
           body: formData,
         });
-        const url = await response.json()
+        // const url = await response.json()
   
-        const uploadFile = await fetch(url, {
-          method: "PUT",
-          body: file,
-          headers: {
-            "Content-Type": file.type,
-          }
+        // const uploadFile = await fetch(url, {
+        //   method: "PUT",
+        //   body: file,
+        //   headers: {
+        //     "Content-Type": file.type,
+        //   }
   
-        })
-        if (!uploadFile.ok) {
-          throw new Error("Failed to upload file to S3");
-        }
+        // })
+        // if (!uploadFile.ok) {
+        //   throw new Error("Failed to upload file to S3");
+        // }
         console.log("File uploaded successfully!");
-  
+        router.push('/chat')
       } catch (error) {
         console.log("Error while sending file to server", error);
+      } finally {
+        setLoading(false)
       }
     }
+  
   };
 
   return (
@@ -97,8 +104,15 @@ export default function Homepage() {
         )}
       </div>
       {file ? (
-        <Button onClick={handleUpload} className="mt-2 w-full">
-          Upload
+        <Button disabled={loading} onClick={handleUpload} className="mt-2 w-full">
+          {loading ? (
+            <>
+              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+              Uploading
+            </>
+          ) : (
+            "Upload"
+          )}
         </Button>
       ) : (
         <div className="mt-4 text-center">

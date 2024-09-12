@@ -26,23 +26,11 @@ export default function Chat() {
 
   useEffect(() => {
     // Update to reading from aws s3 bucket
+    // send a post request to server -> server creates signedURL from aws 
+    // -> url is sent back to our client (here)
+    // use the url to send a get request to retrieve the user uploaded document
     const getPdfResults = async () => {
-      const file = searchParams.get("file"); // Get 'file' from query params
-
-      if (file) {
-        try {
-          const response = await fetch(`/api/parse?file=${file}`);
-          if (!response.ok) throw new Error("Failed to fetch PDF results");
-
-          const data = await response.json();
-        } catch (error) {
-          console.error("Error fetching PDF results:", error);
-        } finally {
-          setIsLoading(false);
-        }
-      } else {
-        console.error("No file parameter found in the URL");
-      }
+    
     };
   
     getPdfResults();
