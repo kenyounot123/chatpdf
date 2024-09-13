@@ -39,21 +39,13 @@ export default function Homepage() {
           method: "POST",
           body: formData,
         });
-        // const url = await response.json()
-  
-        // const uploadFile = await fetch(url, {
-        //   method: "PUT",
-        //   body: file,
-        //   headers: {
-        //     "Content-Type": file.type,
-        //   }
-  
-        // })
-        // if (!uploadFile.ok) {
-        //   throw new Error("Failed to upload file to S3");
-        // }
+        if (!response.ok) {
+          throw new Error('Could not upload file')
+        }
+      
+        const { fileName } = await response.json()
         console.log("File uploaded successfully!");
-        router.push('/chat')
+        router.push(`/chat?file=${encodeURIComponent(fileName)}`)
       } catch (error) {
         console.log("Error while sending file to server", error);
       } finally {

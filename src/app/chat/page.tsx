@@ -3,7 +3,6 @@ import { useEffect, useRef, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Send, Menu, Plus, MessageSquare } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageLoadingSpinner } from "@/components/message-loading-spinner";
 import Markdown from 'react-markdown'
@@ -25,12 +24,21 @@ export default function Chat() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    // Update to reading from aws s3 bucket
-    // send a post request to server -> server creates signedURL from aws 
-    // -> url is sent back to our client (here)
-    // use the url to send a get request to retrieve the user uploaded document
     const getPdfResults = async () => {
-    
+      const file = searchParams.get("file"); // Get 'file' from query params
+      if (file) {
+        try {
+          const response = await fetch(`/api/parse?file=${file}`);
+          if (!response.ok) throw new Error("Failed to fetch PDF results");
+
+        } catch (error) {
+          console.error("Error fetching PDF results:", error);
+        } finally {
+          setIsLoading(false);
+        }
+      } else {
+        console.error("No file parameter found in the URL");
+      }
     };
   
     getPdfResults();
