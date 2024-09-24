@@ -4,16 +4,21 @@ import { useState, useCallback } from "react";
 import { useDropzone } from "react-dropzone";
 import { Upload, File, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useRouter } from 'next/navigation';
+import { useRouter } from "next/navigation";
+import { useUser } from "@clerk/clerk-react";
+import { useToast } from "@/hooks/use-toast";
+import { ToastAction } from "@/components/ui/toast";
+import { SignInButton } from "@clerk/nextjs";
 
 export default function ClientFileUploader() {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
+  const { isSignedIn } = useUser();
+  const { toast } = useToast();
   const router = useRouter();
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles[0].type === "application/pdf") {
-      console.log(acceptedFiles[0]);
       setFile(acceptedFiles[0]);
     } else {
       alert("Please upload a PDF file");
@@ -29,6 +34,19 @@ export default function ClientFileUploader() {
   const removeFile = () => setFile(null);
 
   const handleUpload = async () => {
+    if (!isSignedIn) {
+      toast({
+        variant: "destructive",
+        title: "You are not signed in",
+        description: "Please sign in before uploading a pdf",
+        action: (
+          <SignInButton mode="modal">
+            <ToastAction altText="Sign in">Sign In</ToastAction>
+          </SignInButton>
+        ),
+      });
+      return;
+    }
     setLoading(true);
     const formData = new FormData();
     formData.append("file", file as Blob);
@@ -39,7 +57,7 @@ export default function ClientFileUploader() {
           body: formData,
         });
         if (!response.ok) {
-          throw new Error('Could not upload file');
+          throw new Error("Could not upload file");
         }
 
         const { fileName } = await response.json();
@@ -91,7 +109,11 @@ export default function ClientFileUploader() {
         )}
       </div>
       {file ? (
-        <Button disabled={loading} onClick={handleUpload} className="mt-2 w-full">
+        <Button
+          disabled={loading}
+          onClick={handleUpload}
+          className="mt-2 w-full"
+        >
           {loading ? (
             <>
               <Loader2 className="mr-2 h-4 w-4 animate-spin" />

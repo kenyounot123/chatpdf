@@ -1,17 +1,17 @@
-"use client";
-import { useState, useEffect } from "react";
+'use client'
 import {
-  useAuth,
   SignedOut,
   SignInButton,
   SignedIn,
   UserButton,
+  useAuth,
 } from "@clerk/nextjs";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import { FileText } from "lucide-react";
 import { Button } from "@/components/ui/button";
 export default function Navbar() {
-  const { isLoaded } = useAuth(); // Check if Clerk is loaded (user auth state)
+  const { isSignedIn, isLoaded } = useAuth(); // Check if Clerk is loaded (user auth state)
   const [showSkeleton, setShowSkeleton] = useState(true);
 
   useEffect(() => {
@@ -33,30 +33,32 @@ export default function Navbar() {
             </Link>
           </div>
           <div className="flex items-center">
-            {showSkeleton ? (
-              <div className="h-10 w-10 rounded-full bg-gray-200 animate-pulse"></div>
-            ) : (
-              <>
-                <SignedOut>
-                  <SignInButton
-                    fallbackRedirectUrl="/"
-                    signUpFallbackRedirectUrl="/"
-                    mode="modal"
-                  >
-                    <Button>Sign In</Button>
-                  </SignInButton>
-                </SignedOut>
-                <SignedIn>
-                  <UserButton
-                    appearance={{
-                      elements: {
-                        avatarBox: "h-10 w-10",
-                      },
-                    }}
-                  />
-                </SignedIn>
-              </>
-            )}
+            <>
+              {showSkeleton ? (
+                <div className="h-10 w-10 rounded-full bg-gray-200 animate-pulse"></div>
+              ) : (
+                <>
+                  <SignedIn>
+                    <UserButton
+                      appearance={{
+                        elements: {
+                          avatarBox: 'h-10 w-10',
+                        },
+                      }}
+                    />
+                  </SignedIn>
+                  <SignedOut>
+                    <SignInButton
+                      fallbackRedirectUrl="/"
+                      signUpFallbackRedirectUrl="/"
+                      mode="modal"
+                    >
+                      <Button>Sign In</Button>
+                    </SignInButton>
+                  </SignedOut>
+                </>
+              )}
+            </>
           </div>
         </div>
       </div>
