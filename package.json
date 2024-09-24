@@ -11,6 +11,7 @@
   "dependencies": {
     "@aws-sdk/client-s3": "^3.650.0",
     "@aws-sdk/s3-request-presigner": "^3.650.0",
+    "@clerk/nextjs": "^5.6.1",
     "@langchain/community": "^0.2.32",
     "@langchain/openai": "^0.2.10",
     "@langchain/pinecone": "^0.0.9",

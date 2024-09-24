@@ -1,4 +1,4 @@
-import { PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { S3Client } from "@aws-sdk/client-s3";
 
 // When no region or credentials are provided, the SDK will use the
 // region and credentials from the local AWS config.

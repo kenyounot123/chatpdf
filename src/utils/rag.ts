@@ -1,6 +1,5 @@
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 import { OpenAIEmbeddings } from "@langchain/openai";
-import { pull } from "langchain/hub";
 import { ChatPromptTemplate } from "@langchain/core/prompts";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
@@ -8,12 +7,11 @@ import { ChatOpenAI } from "@langchain/openai";
 import { Document } from "langchain/document";
 import {
   Pinecone as PineconeClient,
-  IndexModel,
 } from "@pinecone-database/pinecone";
 import { PineconeStore } from "@langchain/pinecone";
 
 const pinecone = new PineconeClient({
-  apiKey: process.env.PINECONE_API_KEY!,
+  apiKey: `${process.env.PINECONE_API_KEY!}`,
 });
 
 // Use a persistent vector database like Pinecone in the future.
@@ -27,7 +25,7 @@ export const embeddings = new OpenAIEmbeddings({
 });
 
 export async function createPineconeStore() {
-  const indexName = process.env.PINECONE_INDEX!;
+  const indexName = `${process.env.PINECONE_INDEX!}`;
   const listIndexesResponse = await pinecone.listIndexes();
   const indexes = listIndexesResponse.indexes ?? [];
 
@@ -71,7 +69,7 @@ export const chunkAndStore = async (
   vectorStore: PineconeStore
 ) => {
   const splits = await textSplitter.splitDocuments(docs);
-  let ids = [];
+  const ids = [];
   for (let i = 0; i < splits.length; i++) {
     ids.push(`${i}`);
   }
@@ -82,7 +80,7 @@ export const ragProcess = async (
   llm: ChatOpenAI,
   vectorStore: PineconeStore,
   userQuery: string,
-  onTokenChunk?: (chunk: string) => void
+  // onTokenChunk?: (chunk: string) => void
 ) => {
   // const splits = await textSplitter.splitDocuments(docs);
   // const vectorStore = await MemoryVectorStore.fromDocuments(

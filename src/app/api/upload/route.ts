@@ -12,7 +12,7 @@ export async function POST(req: NextRequest) {
   const buffer = Buffer.from(await file.arrayBuffer())
   
   const command = new PutObjectCommand({
-    Bucket: process.env.AWS_BUCKET_NAME,
+    Bucket: `${process.env.AWS_BUCKET_NAME}`,
     Key: file.name,
     Body: buffer,
     ContentType: file.type,

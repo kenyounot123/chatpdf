@@ -7,13 +7,14 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { MessageLoadingSpinner } from "@/components/message-loading-spinner";
 import Markdown from 'react-markdown'
 import { Textarea } from "@/components/ui/textarea";
+import { Suspense } from "react";
 
 interface Message {
   content: string;
   role: "user" | "bot";
 }
 
-export default function Chat() {
+function ChatComponent() {
   const [messages, setMessages] = useState<Message[]>([
     { content: "Hello! How can I help you today?", role: "bot" },
   ]);
@@ -42,7 +43,7 @@ export default function Chat() {
     };
   
     getPdfResults();
-  }, []);
+  }, [searchParams]);
 
   useEffect(() => {
     scrollToBottom();
@@ -244,5 +245,12 @@ export default function Chat() {
         </div>
       </div>
     </div>
+  );
+}
+export default function Chat() {
+  return (
+    <Suspense fallback={<MessageLoadingSpinner />}>
+      <ChatComponent />
+    </Suspense>
   );
 }

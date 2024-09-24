@@ -1,7 +1,7 @@
 import { chunkAndStore, createPineconeStore } from "@/utils/rag";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { NextResponse, NextRequest } from "next/server";
-import { GetObjectCommand, ListObjectsCommand } from "@aws-sdk/client-s3"
+import { GetObjectCommand } from "@aws-sdk/client-s3"
 import { s3Client } from "@/utils/s3";
 import { Readable } from "stream";
 export async function GET(req: NextRequest) {
@@ -9,7 +9,7 @@ export async function GET(req: NextRequest) {
   const { searchParams } = new URL(req.url);
   const file = searchParams.get("file") as string;
   const fileObject = {
-    "Bucket": process.env.AWS_BUCKET_NAME,
+    "Bucket": `${process.env.AWS_BUCKET_NAME}`,
     "Key": file
   }
   const command = new GetObjectCommand(fileObject)
