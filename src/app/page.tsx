@@ -1,4 +1,4 @@
-import ClientFileUploader from '@/components/ClientFileUploader';
+import FileUploader from '@/components/FileUploader';
 export default function Homepage() {
   return (
     <>
@@ -7,7 +7,7 @@ export default function Homepage() {
           Upload PDF
         </h1>
         {/* Render the client-side file uploader */}
-        <ClientFileUploader />
+        <FileUploader />
       </div>
     </>
   );

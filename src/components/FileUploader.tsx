@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useCallback } from "react";
+import { useState, useCallback, useRef } from "react";
 import { useDropzone } from "react-dropzone";
 import { Upload, File, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -10,12 +10,13 @@ import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import { SignInButton } from "@clerk/nextjs";
 
-export default function ClientFileUploader() {
+export default function FileUploader() {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const { isSignedIn } = useUser();
   const { toast } = useToast();
   const router = useRouter();
+  const inputRef = useRef<HTMLInputElement | null>(null)
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles[0].type === "application/pdf") {
@@ -33,7 +34,8 @@ export default function ClientFileUploader() {
 
   const removeFile = () => setFile(null);
 
-  const handleUpload = async () => {
+  const handleUpload = async (e:React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
     if (!isSignedIn) {
       toast({
         variant: "destructive",
@@ -51,6 +53,7 @@ export default function ClientFileUploader() {
     const formData = new FormData();
     formData.append("file", file as Blob);
     if (file) {
+      // Use convex mutations to handle uploading the pdf to our s3 bucket
       try {
         const response = await fetch("/api/upload", {
           method: "POST",
@@ -71,8 +74,15 @@ export default function ClientFileUploader() {
     }
   };
 
+  const triggerFileSelect = (e: React.MouseEvent<HTMLButtonElement>) => {
+    e.preventDefault()
+    if (inputRef.current) {
+      inputRef.current.click(); 
+    }
+  };
+
   return (
-    <>
+    <form>
       <div
         {...getRootProps()}
         className={`p-8 border-2 border-dashed rounded-lg text-center cursor-pointer transition-colors ${
@@ -81,7 +91,13 @@ export default function ClientFileUploader() {
             : "border-gray-300 hover:border-primary"
         }`}
       >
-        <input {...getInputProps()} />
+        <input
+          type="file"
+          accept="application/pdf"
+          ref={inputRef}
+          className="hidden" 
+          onChange={(e) => onDrop(Array.from(e.target.files || []))}
+        />
         {file ? (
           <div className="flex items-center justify-center space-x-2">
             <File className="w-6 h-6 text-primary" />
@@ -111,7 +127,7 @@ export default function ClientFileUploader() {
       {file ? (
         <Button
           disabled={loading}
-          onClick={handleUpload}
+          onClick={(e) => handleUpload(e)}
           className="mt-2 w-full"
         >
           {loading ? (
@@ -127,13 +143,13 @@ export default function ClientFileUploader() {
         <div className="mt-4 text-center">
           <span className="text-sm text-gray-500">Or</span>
           <Button
-            onClick={() => document.querySelector("input")?.click()}
+            onClick={(e) => triggerFileSelect(e)}
             className="mt-2 w-full"
           >
             Select PDF
           </Button>
         </div>
       )}
-    </>
+    </form>
   );
 }
