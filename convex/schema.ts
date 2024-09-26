@@ -2,7 +2,13 @@ import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
 export default defineSchema({
+  users: defineTable({
+    name: v.string(),
+    email: v.string(),
+    externalId: v.string(),
+  }).index("byExternalId", ["externalId"]),
   documents: defineTable({
+    user: v.id('users'),
     storageId: v.id("_storage"),
     fileName: v.string()
   }),
