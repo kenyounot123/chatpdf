@@ -9,6 +9,8 @@ import { useUser } from "@clerk/clerk-react";
 import { useToast } from "@/hooks/use-toast";
 import { ToastAction } from "@/components/ui/toast";
 import { SignInButton } from "@clerk/nextjs";
+import { useMutation } from "convex/react";
+import { api } from "../../convex/_generated/api";
 
 export default function FileUploader() {
   const [file, setFile] = useState<File | null>(null);
@@ -17,6 +19,9 @@ export default function FileUploader() {
   const { toast } = useToast();
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement | null>(null)
+
+  const generateUploadUrl = useMutation(api.documents.generateUploadUrl)
+  const sendImage = useMutation(api.documents.saveImage)
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles[0].type === "application/pdf") {
@@ -53,19 +58,27 @@ export default function FileUploader() {
     const formData = new FormData();
     formData.append("file", file as Blob);
     if (file) {
-      // Use convex mutations to handle uploading the pdf to our s3 bucket
+      // Use convex mutations to handle uploading the pdf to our db 
+      // create a new chat for this specific user 
+      const postUrl = await generateUploadUrl()
+      
       try {
-        const response = await fetch("/api/upload", {
+        const result = await fetch(postUrl, {
           method: "POST",
-          body: formData,
+          headers: { "Content-Type": file!.type },
+          body: file,
         });
-        if (!response.ok) {
+        if (!result.ok) {
           throw new Error("Could not upload file");
         }
 
-        const { fileName } = await response.json();
+        const { storageId } = await result.json();
+        const fileName = file.name
         console.log("File uploaded successfully!");
-        router.push(`/chat?file=${encodeURIComponent(fileName)}`);
+        await sendImage({ storageId: storageId, fileName: fileName });
+
+
+        // router.push(`/chat?file=${encodeURIComponent(fileName)}`);
       } catch (error) {
         console.log("Error while sending file to server", error);
       } finally {

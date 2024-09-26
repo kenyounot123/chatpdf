@@ -1,4 +1,4 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation  } from "./_generated/server";
 import { v } from "convex/values";
 
 export const list = query({
@@ -28,7 +28,7 @@ export const send = mutation({
   },
 });
 
-export const initializeMessages = mutation({
+export const initializeMessages = internalMutation({
   args: {
     chatId: v.id("chats"),
   },
@@ -44,6 +44,8 @@ export const initializeMessages = mutation({
         content: "Hello! How can I help you today?",
         sender: "bot",
       });
+    } else {
+      throw Error('Messages in this chat already exist, failed to initialize message')
     }
   },
 });

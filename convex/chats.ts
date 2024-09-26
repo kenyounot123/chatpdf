@@ -1,26 +1,27 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
 export const createChat = mutation({
   args: {
     document: v.string(),
   },
   handler: async (ctx, args) => {
-    await ctx.db.insert("chats", {
+    const chatId = await ctx.db.insert("chats", {
       document: args.document,
+    });
+    await ctx.scheduler.runAfter(0, internal.messages.initializeMessages, {
+      chatId: chatId,
     });
   },
 });
 
 export const getChat = query({
   args: {
-    document: v.string(), // Assuming chatId is a string
+    chatId: v.id('chats'), // Assuming chatId is a string
   },
   handler: async (ctx, args) => {
     // Query the chat using the provided chatId
-    console.log(`Chat ID to query: ${args.document.trim()}`);
-    const chat = await ctx.db.query("chats")
-      .withIndex("byId", (q) => q.eq("document", args.document))
-      .collect();
+    const chat = await ctx.db.get(args.chatId)
     
     // Log the result
     console.log("Filtered chat:", chat);
