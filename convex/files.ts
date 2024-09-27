@@ -23,7 +23,7 @@ export const saveImage = mutation({
       fileId: fileId,
     })
     await ctx.scheduler.runAfter(100, api.chats.createChat, {
-      file: fileId,
+      fileId: fileId,
     });
   },
 });

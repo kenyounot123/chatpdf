@@ -13,7 +13,7 @@ export default defineSchema({
     fileName: v.string(),
   }),
   chats: defineTable({
-    file: v.string(),
+    fileId: v.id('files'),
   }),
   messages: defineTable({
     chatId: v.id('chats'),
@@ -29,4 +29,8 @@ export default defineSchema({
     vectorField: "embedding",
     dimensions: 1536,
   }),
+  cache: defineTable({
+    key: v.string(),
+    value: v.any(),
+  }).index("byKey", ["key"]),
 })

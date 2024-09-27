@@ -6,6 +6,9 @@ import { internalAction, mutation, query } from "../_generated/server";
 import { v } from "convex/values";
 import { PDFLoader } from "@langchain/community/document_loaders/fs/pdf";
 import { internal } from "../_generated/api";
+import { CacheBackedEmbeddings } from "langchain/embeddings/cache_backed";
+import { ConvexKVStore } from "@langchain/community/storage/convex";
+import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 
 export const parseAndEmbedFile = internalAction({
   args: { fileId: v.id("files") },
@@ -20,9 +23,18 @@ export const parseAndEmbedFile = internalAction({
     const loader = new PDFLoader(blob as Blob);
     const docs = await loader.load();
 
+    const embeddings = new CacheBackedEmbeddings({
+      underlyingEmbeddings: new OpenAIEmbeddings(),
+      documentEmbeddingStore: new ConvexKVStore({ ctx }),
+    });
+    const textSplitter = new RecursiveCharacterTextSplitter({
+      chunkSize: 500, // Set your desired chunk size
+      chunkOverlap: 50, // Set overlap size to maintain context (optional)
+    });
+    const chunks = await textSplitter.splitDocuments(docs)
     await ConvexVectorStore.fromDocuments(
-      docs,
-      new OpenAIEmbeddings(),
+      chunks,
+      embeddings,
       { ctx }
     );
 
