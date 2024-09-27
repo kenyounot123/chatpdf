@@ -20,8 +20,10 @@ export default function FileUploader() {
   const router = useRouter();
   const inputRef = useRef<HTMLInputElement | null>(null)
 
-  const generateUploadUrl = useMutation(api.documents.generateUploadUrl)
-  const sendImage = useMutation(api.documents.saveImage)
+  // need some convex query to get current user id 
+
+  const generateUploadUrl = useMutation(api.files.generateUploadUrl)
+  const saveImage = useMutation(api.files.saveImage)
 
   const onDrop = useCallback((acceptedFiles: File[]) => {
     if (acceptedFiles[0].type === "application/pdf") {
@@ -41,6 +43,7 @@ export default function FileUploader() {
 
   const handleUpload = async (e:React.MouseEvent<HTMLButtonElement>) => {
     e.preventDefault()
+    setLoading(true);
     if (!isSignedIn) {
       toast({
         variant: "destructive",
@@ -54,7 +57,6 @@ export default function FileUploader() {
       });
       return;
     }
-    setLoading(true);
     const formData = new FormData();
     formData.append("file", file as Blob);
     if (file) {
@@ -75,8 +77,11 @@ export default function FileUploader() {
         const { storageId } = await result.json();
         const fileName = file.name
         console.log("File uploaded successfully!");
-        await sendImage({ storageId: storageId, fileName: fileName });
+        await saveImage({ storageId: storageId, fileName: fileName });
 
+        // create embeddings from that pdf and store to vectore store
+
+        // redirect you to chat page
 
         // router.push(`/chat?file=${encodeURIComponent(fileName)}`);
       } catch (error) {

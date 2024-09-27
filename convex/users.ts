@@ -47,8 +47,17 @@ export const deleteFromClerk = internalMutation({
         `Can't delete user, there is none for Clerk user ID: ${clerkUserId}`
       );
     }
+
+    // deleting a user from clerk should delete all of the associating 
+    // tables as well. (files, chat, messages)
   },
 });
+
+export async function getCurrentUserOrThrow(ctx: QueryCtx) {
+  const userRecord = await getCurrentUser(ctx);
+  if (!userRecord) throw new Error("Can't get current user");
+  return userRecord;
+}
 
 async function userByExternalId(ctx: QueryCtx, externalId: string) {
   return await ctx.db

@@ -1,24 +1,27 @@
-import { api } from "./_generated/api";
-import { mutation } from "./_generated/server";
-import { v } from "convex/values"
-export const generateUploadUrl = mutation(async (ctx) => {
-  return await ctx.storage.generateUploadUrl();
-});
+import { internalQuery, internalMutation, query } from "./_generated/server";
+import { v } from "convex/values";
 
-export const saveImage = mutation({
+export const addFileAssociationToDocuments = internalMutation({
   args: {
-    user: v.id('users'),
-    storageId: v.id("_storage"),
-    fileName: v.string(),
+    // docId: v.id("documents"),
+    fileId: v.id("files"),
   },
   handler: async (ctx, args) => {
-    const docId = await ctx.db.insert("documents", {
-      user: args.user,
-      storageId: args.storageId,
-      fileName: args.fileName
-    })
-    await ctx.scheduler.runAfter(0, api.chats.createChat, {
-      document: docId,
-    });
-  }
-})
+    const documents = await ctx.db
+      .query("documents")
+      // .filter((q) => q.eq(q.field("_id"), args.docId))
+      .collect();
+
+    await Promise.all(
+      documents.map((doc) =>
+        ctx.db.patch(doc._id, {
+          fileId: args.fileId,
+        })
+      )
+    );
+    return {
+      success: true,
+      message: `${documents.length} documents updated with file ID ${args.fileId}.`,
+    };
+  },
+});

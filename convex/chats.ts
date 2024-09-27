@@ -3,11 +3,11 @@ import { mutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
 export const createChat = mutation({
   args: {
-    document: v.string(),
+    file: v.string(),
   },
   handler: async (ctx, args) => {
     const chatId = await ctx.db.insert("chats", {
-      document: args.document,
+      file: args.file,
     });
     await ctx.scheduler.runAfter(0, internal.messages.initializeMessages, {
       chatId: chatId,

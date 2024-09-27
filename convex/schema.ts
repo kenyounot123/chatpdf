@@ -7,17 +7,26 @@ export default defineSchema({
     email: v.string(),
     externalId: v.string(),
   }).index("byExternalId", ["externalId"]),
-  documents: defineTable({
+  files: defineTable({
     user: v.id('users'),
     storageId: v.id("_storage"),
-    fileName: v.string()
+    fileName: v.string(),
   }),
   chats: defineTable({
-    document: v.string(),
+    file: v.string(),
   }),
   messages: defineTable({
     chatId: v.id('chats'),
     content: v.string(),
     sender: v.string(),
-  }).index('by_chatId', ["chatId"])
+  }).index('by_chatId', ["chatId"]),
+  documents: defineTable({
+    fileId: v.optional(v.id('files')),
+    embedding: v.array(v.number()),
+    text: v.string(),
+    metadata: v.any(),
+  }).vectorIndex("byEmbedding", {
+    vectorField: "embedding",
+    dimensions: 1536,
+  }),
 })
