@@ -17,7 +17,6 @@ export const answer = internalAction({
   },
   handler: async (ctx, { chatId, message }) => {
     try {
-      console.log(`Chat ID: ${chatId}, Message: ${message}`);
       
       const vectorStore = new ConvexVectorStore(new OpenAIEmbeddings(), { ctx });
 
@@ -35,6 +34,7 @@ export const answer = internalAction({
         returnMessages: true,
       });
       const retriever = vectorStore.asRetriever()
+      console.log(memory.chatHistory)
       const prompt = ChatPromptTemplate.fromMessages([
         [
           "system",
@@ -51,12 +51,12 @@ export const answer = internalAction({
         prompt,
         outputParser: new StringOutputParser(),
       });
-
+  
       const context = await retriever.invoke(message);
       const response = await ragChain.invoke({
         question: message,
         context,
-        memory: memory,
+        chat_history: memory.chatHistory,
       });
       
       await ctx.runMutation(internal.messages.addBotResponse, {

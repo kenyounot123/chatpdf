@@ -77,13 +77,9 @@ export default function FileUploader() {
         const { storageId } = await result.json();
         const fileName = file.name
         console.log("File uploaded successfully!");
-        await saveImage({ storageId: storageId, fileName: fileName });
+        const chatId = await saveImage({ storageId: storageId, fileName: fileName });
 
-        // create embeddings from that pdf and store to vectore store
-
-        // redirect you to chat page
-
-        // router.push(`/chat?file=${encodeURIComponent(fileName)}`);
+        router.push(`/chat?id=${chatId}`);
       } catch (error) {
         console.log("Error while sending file to server", error);
       } finally {

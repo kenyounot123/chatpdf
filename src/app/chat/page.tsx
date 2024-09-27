@@ -8,42 +8,29 @@ import { MessageLoadingSpinner } from "@/components/message-loading-spinner";
 import Markdown from 'react-markdown'
 import { Textarea } from "@/components/ui/textarea";
 import { Suspense } from "react";
+import { useQuery, useMutation } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import { Id } from "../../../convex/_generated/dataModel";
+
 
 interface Message {
   content: string;
-  role: "user" | "bot";
+  sender: "user" | "bot";
 }
 
 function ChatComponent() {
-  const [messages, setMessages] = useState<Message[]>([
-    { content: "Hello! How can I help you today?", role: "bot" },
-  ]);
   const [inputMessage, setInputMessage] = useState<string>("");
   const [isSidebarOpen, setIsSidebarOpen] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(true);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const messagesEndRef = useRef(null)
   const searchParams = useSearchParams();
 
-  useEffect(() => {
-    const getPdfResults = async () => {
-      const file = searchParams.get("file"); // Get 'file' from query params
-      if (file) {
-        try {
-          const response = await fetch(`/api/parse?file=${file}`);
-          if (!response.ok) throw new Error("Failed to fetch PDF results");
+  const chatId = searchParams.get('id') as Id<"chats">
 
-        } catch (error) {
-          console.error("Error fetching PDF results:", error);
-        } finally {
-          setIsLoading(false);
-        }
-      } else {
-        console.error("No file parameter found in the URL");
-      }
-    };
-  
-    getPdfResults();
-  }, [searchParams]);
+
+  // chat id is retrieved from search params
+  const messages = useQuery(api.messages.list, chatId ? { chatId: chatId } : "skip");
+  const sendMessage = useMutation(api.messages.send);
 
   useEffect(() => {
     scrollToBottom();
@@ -62,79 +49,12 @@ function ChatComponent() {
     e.preventDefault();
     if (inputMessage.trim() === "") return;
     setInputMessage("");
-    const newMessages: Message[] = [
-      ...messages,
-      {
-        role: "user",
-        content: inputMessage,
-      },
-      {
-        role: "bot",
-        content: "",
-      },
-    ];
-    const lastMessageIndex = newMessages.length - 1;
-    // update state to update frontend display
-    setMessages(newMessages);
-    // We want to send the whole messages array to the backend to handle our RAG process
     try {
-      const response = await fetch("/api/chat", {
-        method: "POST",
-        body: JSON.stringify([
-          ...messages,
-          {
-            role: "user",
-            content: inputMessage,
-          },
-        ]),
-      });
-      // clear input
-
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-      const botResponse = await response.json()
-      console.log(botResponse)
-
-      setMessages((prevMessages) => {
-        const updatedMessages = [...prevMessages];
-        updatedMessages[lastMessageIndex] = {
-          ...updatedMessages[lastMessageIndex],
-          content: updatedMessages[lastMessageIndex].content + `${botResponse}`,
-        };
-        return updatedMessages;
-      });
-      // const reader = response.body?.getReader();
-      // const decoder = new TextDecoder();
-
-      // while (true) {
-      //   const { done, value } = await (
-      //     reader as ReadableStreamDefaultReader<Uint8Array>
-      //   ).read();
-      //   if (done) break;
-
-      //   const text = decoder.decode(value, { stream: true });
-
-        // setMessages((prevMessages) => {
-        //   const updatedMessages = [...prevMessages];
-        //   updatedMessages[lastMessageIndex] = {
-        //     ...updatedMessages[lastMessageIndex],
-        //     content: updatedMessages[lastMessageIndex].content + text,
-        //   };
-        //   return updatedMessages;
-        // });
-      // }
+      await sendMessage({chatId: chatId, content: inputMessage, sender: 'user'})
     } catch (error) {
-      setMessages((messages) => [
-        ...messages,
-        {
-          role: "bot",
-          content:
-            "I'm sorry, but I encountered an error. Please try again later.",
-        },
-      ]);
+      console.log('Failed to send message: ', error)
     }
-  };
+  }
 
   const handleEnterClick = (e:React.KeyboardEvent<HTMLTextAreaElement>) => {
     if (e.key === 'Enter' && !e.shiftKey) {
@@ -155,7 +75,6 @@ function ChatComponent() {
           <Button
             variant="outline"
             className="w-full justify-start text-secondary-foreground hover:bg-secondary-foreground/10 hover:text-secondary-foreground"
-            onClick={() => setMessages([])}
           >
             <Plus className="mr-2 h-4 w-4" /> New Chat
           </Button>
@@ -196,18 +115,18 @@ function ChatComponent() {
 
         {/* Messages */}
         <ScrollArea className="flex-grow p-4 space-y-4 lg:w-[60%] lg:mx-auto">
-          {isLoading && <MessageLoadingSpinner />}
+          {/* {isLoading && <MessageLoadingSpinner />} */}
           {!isLoading &&
-            messages.map((message, idx) => (
+            messages?.map((message, idx) => (
               <div
                 key={idx}
                 className={`flex ${
-                  message.role === "user" ? "justify-end" : "justify-start"
+                  message.sender === "user" ? "justify-end" : "justify-start"
                 } mb-5`}
               >
                 <div
                   className={`max-w-[80%] p-3 rounded-lg ${
-                    message.role === "user"
+                    message.sender === "user"
                       ? "bg-primary text-primary-foreground"
                       : "bg-secondary text-secondary-foreground"
                   }`}

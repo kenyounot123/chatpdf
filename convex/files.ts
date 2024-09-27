@@ -2,6 +2,7 @@ import { api, internal } from "./_generated/api";
 import { internalQuery, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { getCurrentUserOrThrow } from "./users";
+import { Id } from "./_generated/dataModel";
 
 export const generateUploadUrl = mutation(async (ctx) => {
   return await ctx.storage.generateUploadUrl();
@@ -22,9 +23,10 @@ export const saveImage = mutation({
     await ctx.scheduler.runAfter(0, internal.ingest.load.parseAndEmbedFile, {
       fileId: fileId,
     })
-    await ctx.scheduler.runAfter(100, api.chats.createChat, {
+    const chatId = await ctx.runMutation(api.chats.createChat, {
       fileId: fileId,
-    });
+    }) as Id<"chats">;
+    return chatId
   },
 });
 

@@ -4,9 +4,9 @@ import { internal } from "./_generated/api";
 
 export const list = query({
   args: { chatId: v.id("chats") },
-  handler: async (ctx) => {
+  handler: async (ctx, { chatId }) => {
     // Grab the most recent messages.
-    const messages = await ctx.db.query("messages").order("desc").take(100);
+    const messages = await ctx.db.query("messages").order("desc").filter(q => q.eq( q.field('chatId'), chatId)).take(100);
     // Reverse the list so that it's in a chronological order.
     return messages.reverse();
   },

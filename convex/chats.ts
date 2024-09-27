@@ -12,6 +12,7 @@ export const createChat = mutation({
     await ctx.scheduler.runAfter(0, internal.messages.initializeMessages, {
       chatId: chatId,
     });
+    return chatId
   },
 });
 
