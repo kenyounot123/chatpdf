@@ -11,6 +11,7 @@ import { Suspense } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { Id } from "../../../convex/_generated/dataModel";
+import ChatSidebar from "@/components/ChatSideBar";
 
 function ChatComponent() {
   const [inputMessage, setInputMessage] = useState<string>("");
@@ -60,42 +61,11 @@ function ChatComponent() {
   return (
     <div className="flex h-screen bg-background">
       {/* Sidebar */}
-      <div
-        className={`bg-secondary text-secondary-foreground w-64 flex flex-col ${
-          isSidebarOpen ? "" : "hidden"
-        } md:flex`}
-      >
-        <div className="p-4 border-b border-secondary-foreground/10">
-          <Button
-            variant="outline"
-            className="w-full justify-start text-secondary-foreground hover:bg-secondary-foreground/10 hover:text-secondary-foreground"
-          >
-            <Plus className="mr-2 h-4 w-4" /> New Chat
-          </Button>
-        </div>
-        <ScrollArea className="flex-grow">
-          <div className="p-4 space-y-2">
-            {/* You can add previous chat sessions here */}
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-secondary-foreground hover:bg-secondary-foreground/10 hover:text-secondary-foreground"
-            >
-              <MessageSquare className="mr-2 h-4 w-4" /> Previous Chat 1
-            </Button>
-            <Button
-              variant="ghost"
-              className="w-full justify-start text-secondary-foreground hover:bg-secondary-foreground/10 hover:text-secondary-foreground"
-            >
-              <MessageSquare className="mr-2 h-4 w-4" /> Previous Chat 2
-            </Button>
-          </div>
-        </ScrollArea>
-      </div>
-
+      <ChatSidebar/>
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col bg-white">
         {/* Header */}
-        <header className="bg-background border-b border-border p-4 flex items-center">
+        <header className="bg-background border-b border-border p-5 flex items-center">
           <Button
             variant="ghost"
             size="icon"
