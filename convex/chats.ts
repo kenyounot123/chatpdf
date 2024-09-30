@@ -30,3 +30,31 @@ export const getChat = query({
     return chat
   },
 });
+
+export const latestChat = query({
+  args: {
+    userId: v.id('users')
+  },
+  handler: async (ctx, args) => {
+    // Given userId as the arguments i want to fetch the latest chat Created for that user
+
+    // get all user Files, get the latest file
+    // get the associated chat with that file
+    const latestFile = await ctx.db
+    .query("files")
+    .withIndex("byUser", (q) => q.eq("user", args.userId))
+    .order("desc")
+    .first()
+
+    if (!latestFile) {
+      return null;
+    }
+
+    const latestChat = await ctx.db
+      .query("chats")
+      .filter((q) => q.eq(q.field("fileId"), latestFile._id))
+      .first();
+
+    return latestChat?._id ?? null
+  }
+})

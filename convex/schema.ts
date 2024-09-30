@@ -11,7 +11,7 @@ export default defineSchema({
     user: v.id('users'),
     storageId: v.id("_storage"),
     fileName: v.string(),
-  }),
+  }).index('byUser', ['user']),
   chats: defineTable({
     fileId: v.id('files'),
   }),
