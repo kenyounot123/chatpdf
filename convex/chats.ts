@@ -18,6 +18,23 @@ export const createChat = mutation({
   },
 });
 
+export const deleteChat = mutation({
+  args: {
+    chatId: v.id('chats')
+  },
+  handler: async (ctx, args) => {
+    const chat = await ctx.db.get(args.chatId)
+    if (!chat) {
+      console.log('chat not found')
+      return
+    }
+    await ctx.db.delete(args.chatId)
+    // Delete associated file and messages
+    await ctx.scheduler.runAfter(0, internal.files.deleteFile, {fileId: chat?.fileId})
+    await ctx.scheduler.runAfter(0, internal.messages.deleteMessagesInChat, {chatId: args.chatId})
+  }
+})
+
 export const getChat = query({
   args: {
     chatId: v.id('chats'), // Assuming chatId is a string
@@ -33,7 +50,7 @@ export const getChat = query({
   },
 });
 
-export const getLatestChats = query({
+export const getAllChatsForUser = query({
   handler: async (ctx) => {
     // Given userId as the arguments i want to fetch the latest chat Created for that user
     // get all user Files, get the latest file

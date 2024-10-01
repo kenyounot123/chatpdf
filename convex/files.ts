@@ -1,5 +1,5 @@
 import { api, internal } from "./_generated/api";
-import { internalQuery, mutation, query } from "./_generated/server";
+import { internalMutation, internalQuery, mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { getCurrentUserOrThrow } from "./users";
 import { Id } from "./_generated/dataModel";
@@ -42,3 +42,13 @@ export const getStorageIdFromFile = internalQuery({
     return file?.storageId;
   },
 });
+
+export const deleteFile = internalMutation({
+  args: {
+    fileId: v.id('files')
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.delete(args.fileId)
+    
+  },
+})

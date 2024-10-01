@@ -61,7 +61,7 @@ function ChatComponent() {
   return (
     <div className="flex h-screen bg-background">
       {/* Sidebar */}
-      <ChatSidebar/>
+      <ChatSidebar chatId={chatId}/>
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col bg-white">
         {/* Header */}

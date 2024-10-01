@@ -3,10 +3,12 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 
 export const list = query({
-  args: { chatId: v.id("chats") },
-  handler: async (ctx, { chatId }) => {
+  args: { 
+    chatId: v.id("chats")
+  },
+  handler: async (ctx, args) => {
     // Grab the most recent messages.
-    const messages = await ctx.db.query("messages").order("desc").filter(q => q.eq( q.field('chatId'), chatId)).take(100);
+    const messages = await ctx.db.query("messages").order("desc").filter(q => q.eq( q.field('chatId'), args.chatId)).take(100);
     // Reverse the list so that it's in a chronological order.
     return messages.reverse();
   },
@@ -31,6 +33,17 @@ export const send = mutation({
     });
   },
 });
+export const deleteMessagesInChat = internalMutation({
+  args: {
+    chatId: v.id('chats')
+  },
+  handler: async (ctx, args) => {
+    const allMessages = await ctx.db.query('messages').withIndex("by_chatId", (q) => q.eq("chatId", args.chatId)).collect()
+    allMessages.forEach(async (message) => {
+      await ctx.db.delete(message._id)
+    })
+  }
+})
 
 export const initializeMessages = internalMutation({
   args: {
