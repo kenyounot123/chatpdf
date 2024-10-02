@@ -98,7 +98,7 @@ function ChatComponent() {
         </div>
         {/* Document */}
         {tabToggle === "doc" && file && (
-          <div className="flex-grow">
+          <div className="flex-grow px-4 space-y-4 lg:w-[60%] lg:mx-auto mb-5">
             <iframe className="w-full h-full" src={file.url}/>
           </div>
         )}

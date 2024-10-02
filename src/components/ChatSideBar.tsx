@@ -111,7 +111,7 @@ export default function ChatSidebar({ chatId, isSidebarOpen = true }: ChatSideBa
           <DialogHeader>
             <DialogTitle className='text-primary'>Upload a new file to create chat</DialogTitle>
             <DialogDescription>
-              <FileUploader/>
+              <FileUploader setCreateModalOpen={setCreateModalOpen}/>
             </DialogDescription>
           </DialogHeader>
           <DialogFooter>

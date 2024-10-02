@@ -12,7 +12,10 @@ import { SignInButton } from "@clerk/nextjs";
 import { useMutation } from "convex/react";
 import { api } from "../../convex/_generated/api";
 
-export default function FileUploader() {
+interface FileUploaderProps {
+  setCreateModalOpen?: (open: boolean) => void;
+}
+export default function FileUploader({setCreateModalOpen}: FileUploaderProps) {
   const [file, setFile] = useState<File | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const { isSignedIn } = useUser();
@@ -84,6 +87,8 @@ export default function FileUploader() {
         console.log("Error while sending file to server", error);
       } finally {
         setLoading(false);
+        setCreateModalOpen && setCreateModalOpen(false)
+        // maybe add a successful flash or unsuccessful flash
       }
     }
   };
