@@ -1,7 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
-import { Id } from "./_generated/dataModel";
 import { getCurrentUserOrThrow } from "./users";
 export const createChat = mutation({
   args: {
@@ -31,6 +30,7 @@ export const deleteChat = mutation({
     await ctx.db.delete(args.chatId)
     // Delete associated file and messages
     await ctx.scheduler.runAfter(0, internal.files.deleteFile, {fileId: chat?.fileId})
+    await ctx.scheduler.runAfter(0, internal.documents.deleteAssociatedDocs, {fileId: chat?.fileId})
     await ctx.scheduler.runAfter(0, internal.messages.deleteMessagesInChat, {chatId: args.chatId})
   }
 })

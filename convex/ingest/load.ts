@@ -11,7 +11,7 @@ import { ConvexKVStore } from "@langchain/community/storage/convex";
 import { RecursiveCharacterTextSplitter } from "langchain/text_splitter";
 
 export const parseAndEmbedFile = internalAction({
-  args: { fileId: v.id("files") },
+  args: { fileId: v.id("files"), userId: v.id("users") },
   handler: async (ctx, args) => {
     const storageId = await ctx.runQuery(internal.files.getStorageIdFromFile, {
       fileId: args.fileId,
@@ -31,9 +31,20 @@ export const parseAndEmbedFile = internalAction({
       chunkSize: 500, // Set your desired chunk size
       chunkOverlap: 50, // Set overlap size to maintain context (optional)
     });
+
+    const metadata = {
+      fileId: args.fileId, 
+      userId: args.userId
+    };
     const chunks = await textSplitter.splitDocuments(docs)
+    const numberOfNewDocs = chunks.length
+    const documentsWithMetadata = chunks.map(chunk => ({
+      ...chunk,
+      metadata, 
+    }));
+    
     await ConvexVectorStore.fromDocuments(
-      chunks,
+      documentsWithMetadata,
       embeddings,
       { ctx }
     );
@@ -42,6 +53,7 @@ export const parseAndEmbedFile = internalAction({
       0,
       internal.documents.addFileAssociationToDocuments,
       {
+        numberOfDocs: numberOfNewDocs,
         fileId: args.fileId,
       }
     );

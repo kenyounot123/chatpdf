@@ -3,13 +3,16 @@ import { OpenAIEmbeddings, ChatOpenAI } from "@langchain/openai";
 import { BufferMemory } from "langchain/memory";
 import { ConvexChatMessageHistory } from "@langchain/community/stores/message/convex";
 import { ConvexVectorStore } from "@langchain/community/vectorstores/convex";
-import { internalAction } from "./_generated/server";
+import { action, internalAction } from "./_generated/server";
 import {
   ChatPromptTemplate,
 } from "@langchain/core/prompts";
 import { createStuffDocumentsChain } from "langchain/chains/combine_documents";
 import { StringOutputParser } from "@langchain/core/output_parsers";
 import { internal } from "./_generated/api";
+import { VectorFilterBuilder } from "convex/server";
+import { Doc } from "./_generated/dataModel";
+
 export const answer = internalAction({
   args: {
     chatId: v.id("chats"),
@@ -17,9 +20,14 @@ export const answer = internalAction({
   },
   handler: async (ctx, { chatId, message }) => {
     try {
-      
-      const vectorStore = new ConvexVectorStore(new OpenAIEmbeddings(), { ctx });
-
+      const vectorStore = new ConvexVectorStore(new OpenAIEmbeddings(), { 
+        ctx,
+        table: "documents",
+        textField: "text",
+        embeddingField: "embedding",
+        metadataField: "metadata",
+      });
+      const fileId = await ctx.runQuery(internal.files.getFileFromChat, { chatId })
       const model = new ChatOpenAI()
       const memory = new BufferMemory({
         chatHistory: new ConvexChatMessageHistory({
@@ -33,8 +41,12 @@ export const answer = internalAction({
         outputKey: "text",
         returnMessages: true,
       });
-      const retriever = vectorStore.asRetriever()
-      console.log(memory.chatHistory)
+      const metadataFilter = { fileId: fileId } 
+      const retriever = vectorStore.asRetriever({
+        filter: {
+          filter: (q) => q.eq('fileId', metadataFilter.fileId)
+        }
+      });
       const prompt = ChatPromptTemplate.fromMessages([
         [
           "system",
@@ -51,8 +63,8 @@ export const answer = internalAction({
         prompt,
         outputParser: new StringOutputParser(),
       });
-  
       const context = await retriever.invoke(message);
+      console.log(context)
       const response = await ragChain.invoke({
         question: message,
         context,

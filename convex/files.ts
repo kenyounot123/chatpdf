@@ -22,6 +22,7 @@ export const saveImage = mutation({
     });
     await ctx.scheduler.runAfter(0, internal.ingest.load.parseAndEmbedFile, {
       fileId: fileId,
+      userId: currentUser._id
     })
     const chatId = await ctx.runMutation(api.chats.createChat, {
       fileId: fileId,
@@ -29,7 +30,15 @@ export const saveImage = mutation({
     return chatId
   },
 });
-
+export const getFileFromChat = internalQuery({
+  args: {
+    chatId: v.id('chats')
+  },
+  handler: async (ctx, args) => {
+    const chat = await ctx.db.get(args.chatId)
+    return chat?.fileId
+  }
+})
 export const getStorageIdFromFile = internalQuery({
   args: {
     fileId: v.id("files"),

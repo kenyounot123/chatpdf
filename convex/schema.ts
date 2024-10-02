@@ -28,6 +28,7 @@ export default defineSchema({
   }).vectorIndex("byEmbedding", {
     vectorField: "embedding",
     dimensions: 1536,
+    filterFields: ['fileId']
   }),
   cache: defineTable({
     key: v.string(),
