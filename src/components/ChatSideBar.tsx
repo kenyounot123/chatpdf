@@ -16,13 +16,15 @@ import { Id, Doc } from '../../convex/_generated/dataModel'
 import { formatDate } from '@/lib/dateFormatter';
 import { useRouter } from 'next/navigation'
 import { useToast } from '@/hooks/use-toast'
+import FileUploader from './FileUploader'
 
 interface ChatSideBarProps {
   chatId: Id<"chats">,
   isSidebarOpen?: boolean,
 }
 export default function ChatSidebar({ chatId, isSidebarOpen = true }: ChatSideBarProps) {
-  const [deleteModalOpen, setDeleteModalOpen] = useState(false)
+  const [deleteModalOpen, setDeleteModalOpen] = useState<boolean>(false)
+  const [createModalOpen, setCreateModalOpen] = useState<boolean>(false)
   const [chatToDelete, setChatToDelete] = useState<Doc<"chats"> | null>(null)
   const { toast } = useToast()
   const convex = useConvex();
@@ -37,7 +39,6 @@ export default function ChatSidebar({ chatId, isSidebarOpen = true }: ChatSideBa
   }
 
   const handleChatClick = (chat: Doc<"chats">) => {
-    console.log(chat)
     router.push(`/chat?id=${chat._id}`)
   }
 
@@ -59,6 +60,10 @@ export default function ChatSidebar({ chatId, isSidebarOpen = true }: ChatSideBa
     }
   }
 
+  const openCreateModal = () => {
+    setCreateModalOpen(true)
+  }
+
   return (
     <>
       <div
@@ -69,6 +74,7 @@ export default function ChatSidebar({ chatId, isSidebarOpen = true }: ChatSideBa
         <div className="p-4 border-b border-secondary-foreground/10">
           <Button
             variant="outline"
+            onClick={openCreateModal}
             className="w-full justify-start text-secondary-foreground hover:bg-secondary-foreground/10 hover:text-secondary-foreground transition-colors duration-200"
           >
             <Plus className="mr-2 h-4 w-4" /> New Chat
@@ -99,6 +105,22 @@ export default function ChatSidebar({ chatId, isSidebarOpen = true }: ChatSideBa
           </div>
         </ScrollArea>
       </div>
+
+      <Dialog open={createModalOpen} onOpenChange={setCreateModalOpen}>
+        <DialogContent className='bg-secondary border-none'>
+          <DialogHeader>
+            <DialogTitle className='text-primary'>Upload a new file to create chat</DialogTitle>
+            <DialogDescription>
+              <FileUploader/>
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button className="text-primary" variant="outline" onClick={() => setCreateModalOpen(false)}>
+              Cancel
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
         <DialogContent className='bg-secondary border-none'>

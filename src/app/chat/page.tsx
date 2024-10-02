@@ -12,6 +12,7 @@ import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { Id } from "../../../convex/_generated/dataModel";
 import ChatSidebar from "@/components/ChatSideBar";
+import { UserButton } from "@clerk/nextjs";
 
 function ChatComponent() {
   const [inputMessage, setInputMessage] = useState<string>("");
@@ -65,16 +66,11 @@ function ChatComponent() {
       {/* Main Chat Area */}
       <div className="flex-1 flex flex-col bg-white">
         {/* Header */}
-        <header className="bg-background border-b border-border p-5 flex items-center">
-          <Button
-            variant="ghost"
-            size="icon"
-            className="md:hidden mr-2 text-foreground hover:bg-secondary hover:text-secondary-foreground"
-            onClick={() => setIsSidebarOpen(!isSidebarOpen)}
-          >
-            <Menu className="h-6 w-6" />
-          </Button>
-          <h1 className="text-xl font-bold text-primary">Ask Me Anything</h1>
+        <header className="bg-background border-b border-border p-5">
+          <div className="flex items-center lg:max-w-[80%]">
+            <h1 className="grow text-xl font-bold text-primary">Ask Me Anything</h1>
+            <UserButton/>
+          </div>
         </header>
 
         {/* Messages */}
