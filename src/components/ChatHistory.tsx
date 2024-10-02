@@ -7,6 +7,7 @@ import { useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
+import { Skeleton } from "@/components/ui/skeleton"
 
 export default function ChatHistory() {
   const latestChats = useQuery(api.chats.getAllChatsForUser)
@@ -30,9 +31,6 @@ export default function ChatHistory() {
       </CardHeader>
       <CardContent>
         <ScrollArea className="h-[200px] pr-4">
-          {latestChats === undefined && ( // Handle loading state
-            <p className="text-center text-gray-500">Loading chat history...</p>
-          )} 
           {latestChats && latestChats?.length > 0 ? (
             <ul className="space-y-4">
               {latestChats.map((chat) => (
