@@ -61,3 +61,25 @@ export const deleteFile = internalMutation({
     
   },
 })
+
+export const serveFile = query({
+  args: {
+    chatId: v.id('chats')
+  },
+  handler: async (ctx, args) => {
+    const chat = await ctx.db.get(args.chatId)
+    if (!chat) {
+      console.log("No chat found")
+      return null
+    }
+    const file = await ctx.db.get(chat.fileId)
+    if (!file) {
+      console.log("No file found")
+      return null
+    }
+    const url = await ctx.storage.getUrl(file.storageId) || undefined
+    const fileName = file.fileName
+
+    return { url, fileName }
+  }
+})
