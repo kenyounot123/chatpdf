@@ -11,13 +11,12 @@ This project is a PDF-based chatbot application using Retrieval-Augmented Genera
 
 ## Technologies Used
 
-- **Next.js**: Frontend framework for building the UI and routing.
-- **React**: Component-based UI for building interactive user interfaces.
-- **Tailwind CSS**: Utility-first CSS framework for styling and responsive design.
-- **LangChain**: Framework for building RAG pipelines using language models.
-- **OpenAI API**: Provides GPT-based language models for generating responses.
-- **Pinecone**: Vector database for efficient document embedding retrieval.
-- **shadcn**: UI component library for front end
+- **Next.js**: A React framework for building server-side rendered applications.
+- **Convex**: A backend as a service framework for building applications.
+- **LangChain**: A framework for developing applications powered by language models.
+- **OpenAI**: For utilizing OpenAI embeddings and chat models.
+- **Convex Vector Store**: For storing and retrieving document embeddings.
+- **Convex Storage**: For managing file uploads.
 
 ## Getting Started
 
