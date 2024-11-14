@@ -13,7 +13,6 @@ This project is a PDF-based chatbot application using Retrieval-Augmented Genera
 
 - **Next.js**: A React framework for building server-side rendered applications.
 - **Convex**: A backend as a service framework for building applications.
-- **LangChain**: A framework for developing applications powered by language models.
 - **OpenAI**: For utilizing OpenAI embeddings and chat models.
 - **Convex Vector Store**: For storing and retrieving document embeddings.
 - **Convex Storage**: For managing file uploads.
@@ -25,4 +24,3 @@ This project is a PDF-based chatbot application using Retrieval-Augmented Genera
 To run this app, you'll need:
 
 - OpenAI API Key
-- Pinecone API Key
